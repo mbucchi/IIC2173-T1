@@ -1,7 +1,7 @@
 // @see: https://material-ui-next.com/style/typography/#general
 // import 'typeface-roboto'
 
-import { createMuiTheme } from "@material-ui/core"
+import { createMuiTheme } from "@material-ui/core/styles"
 
 // https://material-ui-next.com/style/color/#color-tool
 // https://material.io/color/#!/?view.left=0&view.right=0&primary.color=00B0FF&secondary.color=69F0AE&secondary.text.color=000000

@@ -1,7 +1,33 @@
 const path = require("path")
+const webpack = require("webpack")
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin")
+const WebpackBundleAnalyzer = require("webpack-bundle-analyzer")
+
 const SRC_DIR = path.join(__dirname, "src/")
 const ASSET_PATH = "assets/"
-const DIST_DIR = path.join(__dirname, "dist/")
+const DIST_DIR = path.resolve(__dirname, "dist")
+
+// module.exports = {
+//   entry: {
+//     bundle: `${SRC_DIR}index.tsx`,
+//   },
+//   module: {
+//     rules: [
+//       {
+//         test: /\.tsx?$/,
+//         use: "ts-loader",
+//         exclude: /node_modules/,
+//       },
+//     ],
+//   },
+//   resolve: {
+//     extensions: [".tsx", ".ts", ".js"],
+//   },
+//   output: {
+//     filename: "public/[name].js",
+//     path: DIST_DIR,
+//   },
+// }
 
 module.exports = {
   entry: {
@@ -21,24 +47,58 @@ module.exports = {
 
   module: {
     rules: [
-      { test: /\.css$/, loader: "style-loader!css-loader" },
-      { test: /\.png$/, loader: "url-loader?limit=100000&minetype=image/png" },
       {
-        test: /\.(jpg|pdf)$/,
-        loader: "file-loader",
-        options: { name: `${ASSET_PATH}[hash].[ext]` },
+        test: /\.tsx?$/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: ["@babel/preset-env"],
+            plugins: [
+              [
+                "import",
+                {
+                  libraryName: "@material-ui/core",
+                  libraryDirectory: "",
+                  camel2DashComponentName: false,
+                },
+              ],
+            ],
+          },
+        },
+        exclude: /node-modules/,
       },
-      { test: /\.tsx?$/, loader: "awesome-typescript-loader" },
 
       // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-      { enforce: "pre", test: /\.js$/, loader: "source-map-loader" },
+      {
+        enforce: "pre",
+        test: /\.js$/,
+        use: [{ loader: "source-map-loader" }],
+      },
     ],
   },
-
-  // When importing a module whose path matches one of the following, just
-  // assume a corresponding global variable exists and use that instead.
-  // This is important because it allows us to avoid bundling all of our
-  // dependencies, which allows browsers to cache those libraries between builds.
+  plugins: [
+    new WebpackBundleAnalyzer.BundleAnalyzerPlugin(),
+    new webpack.optimize.OccurrenceOrderPlugin(),
+    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+    // new webpack.DefinePlugin({
+    //   "process.env": {
+    //     NODE_ENV: JSON.stringify("production"),
+    //   },
+    // }),
+  ],
+  optimization: {
+    runtimeChunk: false,
+    splitChunks: {
+      chunks: "all",
+    },
+    minimizer: [
+      new UglifyJsPlugin({
+        cache: true,
+        parallel: true,
+        sourceMap: true,
+      }),
+    ],
+  },
   externals: {
     react: "React",
     "react-dom": "ReactDOM",

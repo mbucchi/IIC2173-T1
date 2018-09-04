@@ -3,18 +3,19 @@ import {
   AppBar,
   Toolbar,
   Typography,
-  withStyles,
   List,
   ListItem,
   FormControl,
   Button,
   Input,
   InputLabel,
-  Icon,
 } from "@material-ui/core"
-import { WithStyles, createStyles } from "@material-ui/core/styles"
+import { WithStyles, createStyles, withStyles } from "@material-ui/core/styles"
 import { Send } from "@material-ui/icons"
 import Post from "./Post"
+import { observable } from "mobx"
+import { observer } from "mobx-react"
+import { Post as PostData, getPosts, addNewPost } from "../utils/requests"
 
 const styles = createStyles({
   background: {
@@ -41,13 +42,63 @@ const styles = createStyles({
   contentList: { width: "50%", minWidth: 380 },
   textField: { width: "50%", minWidth: 350 },
   sendButton: { margin: -10, padding: 0 },
+  post: { paddingLeft: 0, paddingRight: 0 },
 })
 
 interface AppProps extends WithStyles<typeof styles> {
   websiteTitle: string
 }
 
+@observer
 class App extends React.Component<AppProps, {}> {
+  @observable
+  private posts: PostData[] = []
+
+  @observable
+  private inputValue: string = ""
+
+  private loadedAll: boolean = false
+
+  private loading: boolean = false
+
+  componentWillMount() {
+    getPosts().then(newPosts => (this.posts = newPosts))
+    document.onscroll = this.appScrolled
+  }
+
+  newPost = () => {
+    addNewPost(this.inputValue).then(post => {
+      if (post) {
+        this.posts.push(post)
+        this.inputValue = ""
+      } else {
+        // TODO
+        console.log("error")
+      }
+    })
+  }
+
+  appScrolled = async () => {
+    if (!this.loadedAll && !this.loading) {
+      this.loading = true
+
+      const html = document.documentElement
+      const currBot = html.scrollTop + 1.5 * html.clientHeight
+      if (currBot > html.scrollHeight) await this.loadMore()
+      this.loading = false
+    }
+    console.log("scrolling!")
+  }
+
+  loadMore = async () => {
+    const oldest = this.posts[0]
+    await getPosts(oldest).then(newPosts => {
+      if (newPosts && newPosts[0].id != oldest.id)
+        this.posts.unshift(...newPosts)
+      else this.loadedAll = true
+    })
+  }
+
   render() {
     const { classes } = this.props
     return (
@@ -65,13 +116,6 @@ class App extends React.Component<AppProps, {}> {
         </AppBar>
         <div className={classes.mainContainer}>
           <Toolbar className={classes.inputBar}>
-            {/* <TextField
-                id="textarea"
-                label="What's on your mind, anon?"
-                multiline
-                className={classes.textField}
-                margin="normal"
-              /> */}
             <FormControl className={classes.textField}>
               <InputLabel htmlFor="textarea">
                 What's on your mind, anon?
@@ -79,18 +123,25 @@ class App extends React.Component<AppProps, {}> {
               <Input
                 id="textarea"
                 multiline
+                value={this.inputValue}
+                onChange={ev => (this.inputValue = ev.target.value)}
                 endAdornment={
-                  <Button aria-label="send" className={classes.sendButton}>
+                  <Button
+                    aria-label="send"
+                    className={classes.sendButton}
+                    type="submit"
+                    onClick={this.newPost}
+                  >
                     <Send />
                   </Button>
                 }
               />
             </FormControl>
           </Toolbar>
-          <List className={classes.contentList}>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(() => (
-              <ListItem>
-                <Post />
+          <List className={classes.contentList} onScroll={this.appScrolled}>
+            {this.posts.reverse().map(post => (
+              <ListItem key={post.id} className={classes.post}>
+                <Post content={post.content} timestamp={post.timestamp} />
               </ListItem>
             ))}
           </List>

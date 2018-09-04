@@ -10,10 +10,10 @@
     "strictNullChecks": false,
     "noImplicitReturns": true,
     "noImplicitAny": true,
-    "outDir": "dist/public",
+    "outDir": "dist/server",
     "sourceMap": true,
     "typeRoots": ["typings", "node_modules/@types"]
   },
-  "include": ["src", "typings", "server"],
+  "include": ["typings", "server", "src"],
   "exclude": ["node_modules"]
 }
