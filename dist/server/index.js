@@ -94,7 +94,8 @@ var init = function () { return __awaiter(_this, void 0, void 0, function () {
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
-                                    last_timestamp = Number.parseInt(request.params["last_timestamp"]) ||
+                                    last_timestamp = (request.query &&
+                                        Number.parseInt(request.query["last_timestamp"])) ||
                                         Number.MAX_SAFE_INTEGER;
                                     return [4 /*yield*/, db_1.getPosts(last_timestamp)];
                                 case 1: return [2 /*return*/, _a.sent()];

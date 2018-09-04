@@ -50,7 +50,8 @@ const init = async () => {
     path: "/posts",
     handler: async (request, h) => {
       const last_timestamp: number =
-        Number.parseInt(request.params["last_timestamp"]) ||
+        (request.query &&
+          Number.parseInt((<any>request.query)["last_timestamp"])) ||
         Number.MAX_SAFE_INTEGER
       return await getPosts(last_timestamp)
     },

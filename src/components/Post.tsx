@@ -24,7 +24,16 @@ class Post extends React.Component<PostProps, {}> {
     return (
       <Card raised className={classes.card}>
         <CardContent className={classes.content}>
-          <Typography variant="body1">{this.props.content}</Typography>
+          <Typography variant="body1">
+            {this.props.content.split("\n").map((line, key) => {
+              return (
+                <React.Fragment key={key}>
+                  {line}
+                  <br />
+                </React.Fragment>
+              )
+            })}
+          </Typography>
           <br />
           <Typography className={classes.date} variant="caption">
             Posted by Anon on {moment(this.props.timestamp).format("LLL")}

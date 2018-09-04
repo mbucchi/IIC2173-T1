@@ -63,10 +63,14 @@ class App extends React.Component<AppProps, {}> {
 
   componentWillMount() {
     getPosts().then(newPosts => (this.posts = newPosts))
+  }
+
+  componentDidMount() {
     document.onscroll = this.appScrolled
   }
 
   newPost = () => {
+    console.log(this.inputValue)
     addNewPost(this.inputValue).then(post => {
       if (post) {
         this.posts.push(post)
@@ -87,16 +91,27 @@ class App extends React.Component<AppProps, {}> {
       if (currBot > html.scrollHeight) await this.loadMore()
       this.loading = false
     }
-    console.log("scrolling!")
   }
 
   loadMore = async () => {
+    if (this.posts.length == 0) return
     const oldest = this.posts[0]
+    console.log(oldest)
     await getPosts(oldest).then(newPosts => {
-      if (newPosts && newPosts[0].id != oldest.id)
+      if (newPosts.length && newPosts[0].id != oldest.id) {
+        newPosts.pop()
         this.posts.unshift(...newPosts)
-      else this.loadedAll = true
+      } else this.loadedAll = true
     })
+  }
+
+  inputKeyDown = (
+    event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    if (!event.shiftKey && event.keyCode == 13) {
+      event.preventDefault()
+      this.newPost()
+    }
   }
 
   render() {
@@ -124,6 +139,7 @@ class App extends React.Component<AppProps, {}> {
                 id="textarea"
                 multiline
                 value={this.inputValue}
+                onKeyDown={this.inputKeyDown}
                 onChange={ev => (this.inputValue = ev.target.value)}
                 endAdornment={
                   <Button
