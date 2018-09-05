@@ -18,7 +18,6 @@ initDB(FIREBASE_API_KEY, AUTH_DOMAIN, DB_URL, PROJECT_ID)
 
 const server = new hapi.Server({
   port: PORT,
-  host: "localhost",
   routes: {
     files: {
       relativeTo: path.join(__dirname, "../public"),
