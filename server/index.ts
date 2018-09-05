@@ -65,7 +65,7 @@ const init = async () => {
       }
       const { content } = <any>request.payload
       const requestIP: string =
-        request.headers["X-Real-IP"] || request.info.remoteAddress
+        request.headers["x-real-ip"] || request.info.remoteAddress
       const newPost = await addPost(content, requestIP)
       if (!newPost) return h.response().code(500)
       return h.response(newPost).code(201)
