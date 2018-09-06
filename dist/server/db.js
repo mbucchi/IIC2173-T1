@@ -36,21 +36,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 var mysql = require("mysql");
-// export function initDB(
-//   apiKey: string,
-//   domain: string,
-//   db_url: string,
-//   project_id: string,
-// ) {
-//   const config = {
-//     apiKey: apiKey,
-//     authDomain: domain,
-//     databaseURL: db_url,
-//     projectId: project_id,
-//     storageBucket: "",
-//   }
-//   return firebase.initializeApp(config)
-// }
 var Database = /** @class */ (function () {
     function Database(host, user, password, database) {
         var _this = this;
@@ -95,45 +80,3 @@ var Database = /** @class */ (function () {
     return Database;
 }());
 exports.Database = Database;
-// export async function addPost(
-//   content: string,
-//   posterIP: string,
-// ): Promise<PostData> {
-//   const posts_db: firebase.database.Reference = firebase.database().ref("posts")
-//   const newPost = { content, ip: posterIP, timestamp: Date.now() }
-//   const newPostId = posts_db.push().key
-//   const updated = await posts_db
-//     .update({ [newPostId]: newPost })
-//     .then(() => true, () => fail)
-//   if (updated)
-//     return {
-//       id: newPostId,
-//       content: content,
-//       timestamp: newPost.timestamp,
-//     }
-//   return null
-// }
-// var q = connection.query(
-//   "INSERT INTO post SET ?",
-//   { content: "heeey this is an even better post!", poster_ip: "127.0.0.1" },
-//   (err, results) => {
-//     if (err) console.error(err)
-//     else console.log(results)
-//   },
-// )
-// var q = connection.query(
-//   `SELECT ID as id, content, timestamp as date
-//   FROM post
-//   WHERE id < ?
-//   ORDER BY id DESC
-//   LIMIT 20`,
-//   9007199254740991,
-//   (err, results) => console.log(results),
-// )
-// var q = connection.query(
-//   `SELECT ID as id, content, timestamp as date
-//   FROM post
-//   WHERE id = ?`,
-//   3,
-//   (err, results) => console.log(results[0]),
-// )

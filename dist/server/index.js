@@ -42,15 +42,9 @@ var crumb = require("crumb");
 var path = require("path");
 var cookie = require("cookie");
 var dotenv = require("dotenv");
-// import { initDB, getPosts, addPost } from "./db"
 var db_1 = require("./db");
 dotenv.config();
 var PORT = Number.parseInt(process.env.PORT);
-// const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY
-// const AUTH_DOMAIN = process.env.AUTH_DOMAIN
-// const DB_URL = process.env.DB_URL
-// const PROJECT_ID = process.env.PROJECT_ID
-// initDB(FIREBASE_API_KEY, AUTH_DOMAIN, DB_URL, PROJECT_ID)
 var DB_HOST = process.env.DB_HOST;
 var DB_USER = process.env.DB_USER;
 var DB_PW = process.env.DB_PW;
