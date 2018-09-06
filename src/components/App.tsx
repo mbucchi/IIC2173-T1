@@ -70,7 +70,6 @@ class App extends React.Component<AppProps, {}> {
   }
 
   newPost = () => {
-    console.log(this.inputValue)
     addNewPost(this.inputValue).then(post => {
       if (post) {
         this.posts.unshift(post)
