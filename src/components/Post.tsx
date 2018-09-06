@@ -14,7 +14,7 @@ const styles = createStyles({
 })
 
 interface PostProps extends WithStyles<typeof styles> {
-  timestamp: number
+  date: Date
   content: string
 }
 
@@ -36,7 +36,7 @@ class Post extends React.Component<PostProps, {}> {
           </Typography>
           <br />
           <Typography className={classes.date} variant="caption">
-            Posted by Anon on {moment(this.props.timestamp).format("LLL")}
+            Posted by Anon on {moment(this.props.date).format("LLL")}
           </Typography>
         </CardContent>
       </Card>

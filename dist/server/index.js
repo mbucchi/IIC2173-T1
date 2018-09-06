@@ -14,8 +14,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
         while (_) try {
-            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [0, t.value];
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
                 case 0: case 1: t = op; break;
                 case 4: _.label++; return { value: op[1], done: false };
@@ -42,14 +42,20 @@ var crumb = require("crumb");
 var path = require("path");
 var cookie = require("cookie");
 var dotenv = require("dotenv");
+// import { initDB, getPosts, addPost } from "./db"
 var db_1 = require("./db");
 dotenv.config();
 var PORT = Number.parseInt(process.env.PORT);
-var FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
-var AUTH_DOMAIN = process.env.AUTH_DOMAIN;
-var DB_URL = process.env.DB_URL;
-var PROJECT_ID = process.env.PROJECT_ID;
-db_1.initDB(FIREBASE_API_KEY, AUTH_DOMAIN, DB_URL, PROJECT_ID);
+// const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY
+// const AUTH_DOMAIN = process.env.AUTH_DOMAIN
+// const DB_URL = process.env.DB_URL
+// const PROJECT_ID = process.env.PROJECT_ID
+// initDB(FIREBASE_API_KEY, AUTH_DOMAIN, DB_URL, PROJECT_ID)
+var DB_HOST = process.env.DB_HOST;
+var DB_USER = process.env.DB_USER;
+var DB_PW = process.env.DB_PW;
+var DB_DB = process.env.DB_DB;
+var db = new db_1.Database(DB_HOST, DB_USER, DB_PW, DB_DB);
 var server = new hapi.Server({
     port: PORT,
     routes: {
@@ -93,10 +99,9 @@ var init = function () { return __awaiter(_this, void 0, void 0, function () {
                         return __generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
-                                    last_timestamp = (request.query &&
-                                        Number.parseInt(request.query["last_timestamp"])) ||
+                                    last_timestamp = (request.query && Number.parseInt(request.query["last_id"])) ||
                                         Number.MAX_SAFE_INTEGER;
-                                    return [4 /*yield*/, db_1.getPosts(last_timestamp)];
+                                    return [4 /*yield*/, db.getPosts(last_timestamp)];
                                 case 1: return [2 /*return*/, _a.sent()];
                             }
                         });
@@ -114,8 +119,8 @@ var init = function () { return __awaiter(_this, void 0, void 0, function () {
                                         return [2 /*return*/, h.response().code(422)];
                                     }
                                     content = request.payload.content;
-                                    requestIP = request.info.remoteAddress;
-                                    return [4 /*yield*/, db_1.addPost(content, requestIP)];
+                                    requestIP = request.headers["x-real-ip"] || request.info.remoteAddress;
+                                    return [4 /*yield*/, db.addPost(content, requestIP)];
                                 case 1:
                                     newPost = _a.sent();
                                     if (!newPost)

@@ -4,17 +4,18 @@ import * as crumb from "crumb"
 import * as path from "path"
 import * as cookie from "cookie"
 import * as dotenv from "dotenv"
-import { initDB, getPosts, addPost } from "./db"
+import { Database } from "./db"
 
 dotenv.config()
 
 const PORT = Number.parseInt(process.env.PORT)
-const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY
-const AUTH_DOMAIN = process.env.AUTH_DOMAIN
-const DB_URL = process.env.DB_URL
-const PROJECT_ID = process.env.PROJECT_ID
 
-initDB(FIREBASE_API_KEY, AUTH_DOMAIN, DB_URL, PROJECT_ID)
+const DB_HOST = process.env.DB_HOST
+const DB_USER = process.env.DB_USER
+const DB_PW = process.env.DB_PW
+const DB_DB = process.env.DB_DB
+
+const db = new Database(DB_HOST, DB_USER, DB_PW, DB_DB)
 
 const server = new hapi.Server({
   port: PORT,
@@ -49,10 +50,9 @@ const init = async () => {
     path: "/posts",
     handler: async (request, h) => {
       const last_timestamp: number =
-        (request.query &&
-          Number.parseInt((<any>request.query)["last_timestamp"])) ||
+        (request.query && Number.parseInt((<any>request.query)["last_id"])) ||
         Number.MAX_SAFE_INTEGER
-      return await getPosts(last_timestamp)
+      return await db.getPosts(last_timestamp)
     },
   })
 
@@ -66,7 +66,7 @@ const init = async () => {
       const { content } = <any>request.payload
       const requestIP: string =
         request.headers["x-real-ip"] || request.info.remoteAddress
-      const newPost = await addPost(content, requestIP)
+      const newPost = await db.addPost(content, requestIP)
       if (!newPost) return h.response().code(500)
       return h.response(newPost).code(201)
     },

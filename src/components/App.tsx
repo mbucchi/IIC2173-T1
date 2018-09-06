@@ -73,7 +73,7 @@ class App extends React.Component<AppProps, {}> {
     console.log(this.inputValue)
     addNewPost(this.inputValue).then(post => {
       if (post) {
-        this.posts.push(post)
+        this.posts.unshift(post)
         this.inputValue = ""
       } else {
         // TODO
@@ -95,12 +95,11 @@ class App extends React.Component<AppProps, {}> {
 
   loadMore = async () => {
     if (this.posts.length == 0) return
-    const oldest = this.posts[0]
-    console.log(oldest)
+    const oldest = this.posts[this.posts.length - 1]
     await getPosts(oldest).then(newPosts => {
       if (newPosts.length && newPosts[0].id != oldest.id) {
         newPosts.pop()
-        this.posts.unshift(...newPosts)
+        this.posts.push(...newPosts)
       } else this.loadedAll = true
     })
   }
@@ -155,9 +154,9 @@ class App extends React.Component<AppProps, {}> {
             </FormControl>
           </Toolbar>
           <List className={classes.contentList} onScroll={this.appScrolled}>
-            {this.posts.reverse().map(post => (
+            {this.posts.map(post => (
               <ListItem key={post.id} className={classes.post}>
-                <Post content={post.content} timestamp={post.timestamp} />
+                <Post content={post.content} date={post.date} />
               </ListItem>
             ))}
           </List>

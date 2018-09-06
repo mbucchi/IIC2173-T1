@@ -14,8 +14,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
         while (_) try {
-            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [0, t.value];
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
                 case 0: case 1: t = op; break;
                 case 4: _.label++; return { value: op[1], done: false };
@@ -35,73 +35,105 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var firebase = require("firebase");
-var _ = require("lodash");
-function initDB(apiKey, domain, db_url, project_id) {
-    var config = {
-        apiKey: apiKey,
-        authDomain: domain,
-        databaseURL: db_url,
-        projectId: project_id,
-        storageBucket: ""
-    };
-    return firebase.initializeApp(config);
-}
-exports.initDB = initDB;
-function getPosts(last_timestamp) {
-    return __awaiter(this, void 0, void 0, function () {
-        var posts;
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, firebase
-                        .database()
-                        .ref("posts")
-                        .orderByChild("timestamp")
-                        .endAt(last_timestamp)
-                        .limitToLast(20)
-                        .once("value")
-                        .then(function (snapshot) {
-                        var data = snapshot.val();
-                        return _.keys(snapshot.val()).map(function (key) {
-                            var post = data[key];
-                            return {
-                                id: key,
-                                content: post.content,
-                                timestamp: post.timestamp
-                            };
+var mysql = require("mysql");
+// export function initDB(
+//   apiKey: string,
+//   domain: string,
+//   db_url: string,
+//   project_id: string,
+// ) {
+//   const config = {
+//     apiKey: apiKey,
+//     authDomain: domain,
+//     databaseURL: db_url,
+//     projectId: project_id,
+//     storageBucket: "",
+//   }
+//   return firebase.initializeApp(config)
+// }
+var Database = /** @class */ (function () {
+    function Database(host, user, password, database) {
+        var _this = this;
+        this.getPosts = function (last_id) { return __awaiter(_this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        return _this.connection.query("SELECT ID as id, content, timestamp as date \n         FROM post \n         WHERE id < ?\n         ORDER BY id DESC\n         LIMIT 20", last_id, function (err, results) {
+                            if (err)
+                                reject(err);
+                            else
+                                resolve(results);
                         });
                     })];
-                case 1:
-                    posts = _a.sent();
-                    return [2 /*return*/, posts];
-            }
+            });
+        }); };
+        this.addPost = function (content, poster_ip) { return __awaiter(_this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        return _this.connection.query("INSERT INTO post SET ?", { content: content, poster_ip: poster_ip }, function (err, results) {
+                            if (err)
+                                reject(err);
+                            else
+                                _this.connection.query("SELECT ID as id, content, timestamp as date FROM post WHERE id = ?", results.insertId, function (err, results) {
+                                    if (err)
+                                        reject(err);
+                                    else
+                                        resolve(results[0]);
+                                });
+                        });
+                    })];
+            });
+        }); };
+        this.connection = mysql.createConnection({
+            host: host,
+            user: user,
+            password: password,
+            database: database
         });
-    });
-}
-exports.getPosts = getPosts;
-function addPost(content, posterIP) {
-    return __awaiter(this, void 0, void 0, function () {
-        var posts_db, newPost, newPostId, updated, _a;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
-                case 0:
-                    posts_db = firebase.database().ref("posts");
-                    newPost = { content: content, ip: posterIP, timestamp: Date.now() };
-                    newPostId = posts_db.push().key;
-                    return [4 /*yield*/, posts_db
-                            .update((_a = {}, _a[newPostId] = newPost, _a))
-                            .then(function () { return true; }, function () { return fail; })];
-                case 1:
-                    updated = _b.sent();
-                    if (updated)
-                        return [2 /*return*/, {
-                                id: newPostId,
-                                content: content,
-                                timestamp: newPost.timestamp
-                            }];
-                    return [2 /*return*/, null];
-            }
-        });
-    });
-}
-exports.addPost = addPost;
+    }
+    return Database;
+}());
+exports.Database = Database;
+// export async function addPost(
+//   content: string,
+//   posterIP: string,
+// ): Promise<PostData> {
+//   const posts_db: firebase.database.Reference = firebase.database().ref("posts")
+//   const newPost = { content, ip: posterIP, timestamp: Date.now() }
+//   const newPostId = posts_db.push().key
+//   const updated = await posts_db
+//     .update({ [newPostId]: newPost })
+//     .then(() => true, () => fail)
+//   if (updated)
+//     return {
+//       id: newPostId,
+//       content: content,
+//       timestamp: newPost.timestamp,
+//     }
+//   return null
+// }
+// var q = connection.query(
+//   "INSERT INTO post SET ?",
+//   { content: "heeey this is an even better post!", poster_ip: "127.0.0.1" },
+//   (err, results) => {
+//     if (err) console.error(err)
+//     else console.log(results)
+//   },
+// )
+// var q = connection.query(
+//   `SELECT ID as id, content, timestamp as date
+//   FROM post
+//   WHERE id < ?
+//   ORDER BY id DESC
+//   LIMIT 20`,
+//   9007199254740991,
+//   (err, results) => console.log(results),
+// )
+// var q = connection.query(
+//   `SELECT ID as id, content, timestamp as date
+//   FROM post
+//   WHERE id = ?`,
+//   3,
+//   (err, results) => console.log(results[0]),
+// )

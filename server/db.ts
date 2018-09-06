@@ -1,73 +1,60 @@
-import * as firebase from "firebase"
-import * as _ from "lodash"
+import * as mysql from "mysql"
 
 type PostData = {
-  id: string
+  id: number
   content: string
-  timestamp: number
+  date: Date
 }
 
-type FirebasePost = {
-  ip: string
-  content: string
-  timestamp: number
-}
+export class Database {
+  private connection: mysql.Connection
 
-export function initDB(
-  apiKey: string,
-  domain: string,
-  db_url: string,
-  project_id: string,
-) {
-  const config = {
-    apiKey: apiKey,
-    authDomain: domain,
-    databaseURL: db_url,
-    projectId: project_id,
-    storageBucket: "",
-  }
-  return firebase.initializeApp(config)
-}
-
-export async function getPosts(
-  last_timestamp: number,
-): Promise<Array<PostData>> {
-  const posts: PostData[] = await firebase
-    .database()
-    .ref("posts")
-    .orderByChild("timestamp")
-    .endAt(last_timestamp)
-    .limitToLast(20)
-    .once("value")
-    .then(snapshot => {
-      const data = snapshot.val()
-      return _.keys(snapshot.val()).map(key => {
-        const post: FirebasePost = data[key]
-        return {
-          id: key,
-          content: post.content,
-          timestamp: post.timestamp,
-        }
-      })
+  constructor(host: string, user: string, password: string, database: string) {
+    this.connection = mysql.createConnection({
+      host,
+      user,
+      password,
+      database,
     })
-  return posts
-}
+  }
 
-export async function addPost(
-  content: string,
-  posterIP: string,
-): Promise<PostData> {
-  const posts_db: firebase.database.Reference = firebase.database().ref("posts")
-  const newPost = { content, ip: posterIP, timestamp: Date.now() }
-  const newPostId = posts_db.push().key
-  const updated = await posts_db
-    .update({ [newPostId]: newPost })
-    .then(() => true, () => fail)
-  if (updated)
-    return {
-      id: newPostId,
-      content: content,
-      timestamp: newPost.timestamp,
-    }
-  return null
+  public getPosts = async (last_id: number): Promise<PostData[]> => {
+    return new Promise<PostData[]>((resolve, reject) =>
+      this.connection.query(
+        `SELECT ID as id, content, timestamp as date 
+         FROM post 
+         WHERE id < ?
+         ORDER BY id DESC
+         LIMIT 20`,
+        last_id,
+        (err, results) => {
+          if (err) reject(err)
+          else resolve(results)
+        },
+      ),
+    )
+  }
+  public addPost = async (
+    content: string,
+    poster_ip: string,
+  ): Promise<PostData> => {
+    return new Promise<PostData>((resolve, reject) =>
+      this.connection.query(
+        "INSERT INTO post SET ?",
+        { content, poster_ip },
+        (err, results) => {
+          if (err) reject(err)
+          else
+            this.connection.query(
+              "SELECT ID as id, content, timestamp as date FROM post WHERE id = ?",
+              results.insertId,
+              (err, results) => {
+                if (err) reject(err)
+                else resolve(results[0])
+              },
+            )
+        },
+      ),
+    )
+  }
 }

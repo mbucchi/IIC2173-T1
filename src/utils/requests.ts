@@ -3,14 +3,13 @@ import axios, { AxiosResponse } from "axios"
 export type Post = {
   id: string
   content: string
-  timestamp: number
+  date: Date
 }
 
 export const getPosts = async (lastPost?: Post): Promise<Post[]> => {
   const res: AxiosResponse<Post[]> = await axios.get("/posts", {
     params: {
-      last_timestamp:
-        (lastPost && lastPost.timestamp) || Number.MAX_SAFE_INTEGER,
+      last_id: (lastPost && lastPost.id) || Number.MAX_SAFE_INTEGER,
     },
   })
   if (res.status != 200) {
